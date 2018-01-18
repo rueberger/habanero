@@ -4,6 +4,7 @@ from . import __version__
 
 from .response import Works
 from .noworks import NoWorks
+from .exceptions import Error,RequestError
 
 # helpers ----------
 def converter(x):

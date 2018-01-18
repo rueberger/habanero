@@ -56,10 +56,13 @@ class Request(object):
     payload = rename_query_filters(payload)
 
     js = self._req(payload = payload)
-    cu = js['message'].get('next-cursor')
-    max_avail = js['message']['total-results']
-    res = self._redo_req(js, payload, cu, max_avail)
-    return res
+    if (js.__class__.__name__ == 'NoneType'):
+      return None
+    else:
+      cu = js['message'].get('next-cursor')
+      max_avail = js['message']['total-results']
+      res = self._redo_req(js, payload, cu, max_avail)
+      return res
 
   def _redo_req(self, js, payload, cu, max_avail):
     if(cu.__class__.__name__ != 'NoneType' and self.cursor_max > len(js['message']['items'])):
@@ -84,7 +87,10 @@ class Request(object):
         f = r.json()
         raise RequestError(r.status_code, f['message'][0]['message'])
       except:
-        r.raise_for_status()
+        mssg = '%s: %s' % (r.status_code, r.reason)
+        warnings.warn(mssg)
+        return None
+        # r.raise_for_status()
     except requests.exceptions.RequestException as e:
       print(e)
     check_json(r)

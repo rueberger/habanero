@@ -1,10 +1,11 @@
 import requests
 import json
 import re
+import warnings
 
 from .filterhandler import filter_handler
 from .habanero_utils import switch_classes,check_json,is_json,parse_json_err,make_ua,filter_dict,rename_query_filters
-from .exceptions import *
+from .exceptions import Error,RequestError
 from .request_class import Request
 
 def request(mailto, url, path, ids = None, query = None, filter = None,
@@ -67,9 +68,13 @@ def request(mailto, url, path, ids = None, query = None, filter = None,
 
         endpt = endpt.strip("/")
 
+        mssg = None
         try:
           r = requests.get(endpt, params = payload, headers = make_ua(mailto))
-          r.raise_for_status()
+          if(r.status_code > 201):
+            mssg = '%s on %s: %s' % (r.status_code, ids[i], r.reason)
+            warnings.warn(mssg)
+          # r.raise_for_status()
         except requests.exceptions.HTTPError:
           if is_json(r):
             raise RequestError(r.status_code, parse_json_err(r))
@@ -77,12 +82,20 @@ def request(mailto, url, path, ids = None, query = None, filter = None,
             r.raise_for_status()
         except requests.exceptions.RequestException as e:
           raise e
-        check_json(r)
-        js = r.json()
-        #tt_out = switch_classes(js, path, works)
-        coll.append(js)
+
+        if mssg is not None:
+          coll.append(None)
+        else:
+          check_json(r)
+          js = r.json()
+          #tt_out = switch_classes(js, path, works)
+          coll.append(js)
 
     if len(coll) == 1:
       coll = coll[0]
+
+    ## FIXME: remove None - can't get these to work
+    # coll = list(filter(None.__ne__, coll))
+    # coll = list(filter(lambda v: v is not None, coll))
 
   return coll
