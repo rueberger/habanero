@@ -88,4 +88,6 @@ class Request(object):
     except requests.exceptions.RequestException as e:
       print(e)
     check_json(r)
-    return r.json()
+    json_rec = r.json()
+    json_rec['headers'] = r.headers
+    return json_rec
