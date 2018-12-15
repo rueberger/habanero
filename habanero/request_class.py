@@ -32,6 +32,7 @@ class Request(object):
     self.cursor_max = cursor_max
     self.agency = agency
     self.kwargs = kwargs
+    self.session = requests.Session()
 
   def _url(self):
     tmpurl = self.url + self.path
@@ -77,7 +78,7 @@ class Request(object):
 
   def _req(self, payload):
     try:
-      r = requests.get(self._url(), params = payload, headers = make_ua(self.mailto))
+      r = self.session.get(self._url(), params = payload, headers = make_ua(self.mailto))
       r.raise_for_status()
     except requests.exceptions.HTTPError:
       try:
