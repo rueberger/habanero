@@ -89,5 +89,5 @@ class Request(object):
       print(e)
     check_json(r)
     json_rec = r.json()
-    json_rec['headers'] = r.headers
+    json_rec['headers'] = dict(r.headers)
     return json_rec
