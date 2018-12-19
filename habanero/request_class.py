@@ -80,6 +80,10 @@ class Request(object):
     try:
       r = self.session.get(self._url(), params = payload, headers = make_ua(self.mailto))
       r.raise_for_status()
+      check_json(r)
+      json_rec = r.json()
+      json_rec['headers'] = dict(r.headers)
+      return json_rec
     except requests.exceptions.HTTPError:
       try:
         f = r.json()
@@ -88,7 +92,3 @@ class Request(object):
         r.raise_for_status()
     except requests.exceptions.RequestException as e:
       print(e)
-    check_json(r)
-    json_rec = r.json()
-    json_rec['headers'] = dict(r.headers)
-    return json_rec
